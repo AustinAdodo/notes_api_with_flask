@@ -5,6 +5,8 @@ from db import DB
 
 
 class TestCase(unittest.TestCase):
+    client = None
+
     @classmethod
     def setUpClass(cls):
         cls.client = app.test_client()
@@ -39,12 +41,12 @@ class TestCase(unittest.TestCase):
         )
 
     def test_no_content(self):
-        "GET /api/notes/id 404"
+        """GET /api/notes/id 404"""
         response = TestCase.client.get("/api/notes/2", follow_redirects=True)
         self.assertEqual(response.status_code, 404)
 
     def test_delete(self):
-        "DELETE /api/notes/id 200"
+        """DELETE /api/notes/id 200"""
         response = TestCase.client.post(
             "/api/notes",
             json={"content": "hello again"},
@@ -56,7 +58,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_put_200(self):
-        "PUT /api/notes/id 200"
+        """PUT /api/notes/id 200"""
         response = TestCase.client.post(
             "/api/notes",
             json={"content": "hello again"},
@@ -75,12 +77,12 @@ class TestCase(unittest.TestCase):
         )
 
     def test_put_422(self):
-        "PUT /api/notes/id 422"
+        """PUT /api/notes/id 422"""
         response = TestCase.client.put("/api/notes/1", json={})
         self.assertEqual(response.status_code, 422)
 
     def test_put_404(self):
-        "PUT /api/notes/id 404"
+        """PUT /api/notes/id 404"""
         response = TestCase.client.post(
             "/api/notes",
             json={"content": "hello again"},
