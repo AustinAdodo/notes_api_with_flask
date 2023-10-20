@@ -10,9 +10,12 @@ class DB:
 
     @staticmethod
     def create_notes_table_if_not_exists():
+        """In SQLite, you should use AUTOINCREMENT without the
+             "AUTO" part. It should be AUTOINCREMENT or just INTEGER
+              PRIMARY KEY for auto-incrementing primary keys"""
         query = """
         CREATE TABLE IF NOT EXISTS notes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             content TEXT NOT NULL
         );
         """
@@ -55,4 +58,3 @@ class DB:
     def select_all_notes():
         DB.cursor.execute("SELECT * FROM notes;")
         return DB.cursor.fetchall()
-

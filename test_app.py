@@ -1,7 +1,9 @@
 import json
 import unittest
 from app import app
-from db import DB
+
+
+# from db import DB
 
 
 class TestCase(unittest.TestCase):
@@ -9,6 +11,7 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        app.config['TESTING'] = True  # Set the app to testing mode
         cls.client = app.test_client()
         # You don't need to create a test database for the Flask client
         # Testing will use a separate in-memory database by default

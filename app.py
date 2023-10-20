@@ -14,9 +14,13 @@ def init_db():
 
 @app.route('/api/notes', methods=['POST'])
 def create_note():
-    # noinspection PyUnresolvedReferences
-    data = request.get_json(force=True)
-    if 'content' not in data:
+    # data = request.get_json()
+    data = None
+    try:
+        data = request().json()
+    except json.JSONDecodeError as e:
+        print('Error parsing JSON data: {}'.format(e))
+    if data is None or 'content' not in data:
         return json.dumps({'error': 'Missing key: content'}), 422
 
     new_note_id = DB.create_note(data['content'])
