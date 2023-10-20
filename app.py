@@ -1,5 +1,6 @@
 from flask import Flask
 import json
+import requests  # pip install --upgrade requests
 from requests import request
 from db import DB
 
@@ -12,19 +13,18 @@ def init_db():
         DB.create_notes_table_if_not_exists()
 
 
+# sending get request and saving the response as response object
+# r = requests.get(url = URL, params = PARAMS)
 @app.route('/api/notes', methods=['POST'])
 def create_note():
-    # data = request.get_json()
-    data = None
-    try:
-        data = request().json()
-    except json.JSONDecodeError as e:
-        print('Error parsing JSON data: {}'.format(e))
+    # data = request.get_json(force=True)
+    # Get the request body
+    request_body = requests.Response().content
+    decoded_request_body = request_body.decode()
+    data = json.loads(decoded_request_body)
     if data is None or 'content' not in data:
         return json.dumps({'error': 'Missing key: content'}), 422
-
     new_note_id = DB.create_note(data['content'])
-
     return json.dumps({'message': 'Note created successfully', 'id': new_note_id}), 201
 
 
@@ -47,7 +47,7 @@ def get_note(note_id):
 
 @app.route('/api/notes/<int:note_id>', methods=['PUT'])
 def update_note(note_id):
-    # noinspection PyUnresolvedReferences
+    # #noinspection PyUnresolvedReferences
     data = request.get_json(force=True)
     if 'content' not in data:
         return json.dumps({'error': 'Missing key: content'}), 422
