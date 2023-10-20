@@ -7,7 +7,6 @@ app = Flask(__name__)
 DATABASE = 'notes.db'
 
 
-# Initialize the database when the app starts
 def init_db():
     with DB.conn:
         DB.create_notes_table_if_not_exists()
@@ -67,5 +66,5 @@ def delete_note(note_id):
 
 
 if __name__ == '__main__':
-    init_db()  # Initialize the database if the app is run directly
+    init_db()  # Initialize the database if the app is run directly and not from tests
     app.run(debug=True)
