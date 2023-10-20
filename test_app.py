@@ -17,8 +17,8 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.app = app.test_client()
-        cls.test_db = cls.create_test_database()
+        # cls.app = app.test_client()
+        # cls.test_db = cls.create_test_database()
         cls.client.testing = True
 
     def setUp(self):
