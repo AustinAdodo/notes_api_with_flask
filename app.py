@@ -20,7 +20,7 @@ def create_note():
     # data = request.get_json(force=True)
     # Get the request body
     request_body = requests.Response().content
-    decoded_request_body = request_body.decode()
+    decoded_request_body = request_body
     data = json.loads(decoded_request_body)
     if data is None or 'content' not in data:
         return json.dumps({'error': 'Missing key: content'}), 422
@@ -31,7 +31,6 @@ def create_note():
 @app.route('/api/notes', methods=['GET'])
 def get_all_notes():
     notes = [{'id': row['id'], 'content': row['content']} for row in DB.select_all_notes()]
-
     return json.dumps(notes), 200
 
 

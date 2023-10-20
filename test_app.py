@@ -23,7 +23,7 @@ class TestCase(unittest.TestCase):
         # No need to create the notes table here, it's done in app.py when the app is started
 
     def test_post(self):
-        "POST /api/notes 201"
+        """POST /api/notes 201"""
         response = self.client.post(
             "/api/notes",
             json={"content": "hello"},
