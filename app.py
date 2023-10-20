@@ -3,9 +3,30 @@ import json
 import requests  # pip install --upgrade requests
 from requests import request
 from db import DB
+from flask_restx import Api, Resource, fields
 
 app = Flask(__name__)
 DATABASE = 'notes.db'
+
+# Swagger Configurations
+# pip install flask-restx
+api = Api(app, version='1.0', title='Notes_api_flask', description='distributed api that can be used'
+                                                                   'for a large commerce set-up')
+
+ns = api.namespace('items', description='Item operations')
+
+item_model = api.model('Item', {
+    'id': fields.Integer(readonly=True, description='The item identifier'),
+    'name': fields.String(required=True, description='The item name'),
+})
+
+
+@ns.route('/<int:id>')
+class Item(Resource):
+    @ns.marshal_with(item_model)
+    def get(self, id):
+        """Fetch an item by ID"""
+        pass
 
 
 def init_db():
@@ -18,6 +39,7 @@ def init_db():
 @app.route('/api/notes', methods=['POST'])
 def create_note():
     # data = request.get_json(force=True)
+    # decoded_request_body = request_body.decode()
     # Get the request body
     request_body = requests.Response().content
     decoded_request_body = request_body
