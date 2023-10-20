@@ -1,15 +1,24 @@
 import json
 import unittest
-from app import app
+from app import app, init_db
 from db import DB
+import sqlite3
 
 
 class TestCase(unittest.TestCase):
     client = None
 
+    def create_test_database(self):
+        conn = sqlite3.connect(':memory:')
+        with open('schema.sql', 'r') as f:
+            schema_sql = f.read()
+        conn.executescript(schema_sql)
+        return conn
+
     @classmethod
     def setUpClass(cls):
-        cls.client = app.test_client()
+        cls.app = app.test_client()
+        cls.test_db = cls.create_test_database()
         cls.client.testing = True
 
     def setUp(self):

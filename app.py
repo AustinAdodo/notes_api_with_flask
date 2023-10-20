@@ -1,9 +1,12 @@
 from flask import Flask
-
-# from flask import Flask, jsonify, request
 import sqlite3
 from contextlib import closing
+import json
+from requests import request
 from db import DB
+
+app = Flask(__name__)
+DATABASE = 'notes.db'  # Define DATABASE before calling init_db()
 
 
 # Helper function to initialize the database
@@ -23,68 +26,61 @@ init_db()
 
 @app.route('/api/notes', methods=['POST'])
 def create_note():
-    data = request.json
+    # noinspection PyUnresolvedReferences
+    data = request.get_json(force=True)
     if 'content' not in data:
-        return jsonify({'error': 'Missing key: content'}), 422
+        return json.dumps({'error': 'Missing key: content'}), 422
 
-    with closing(connect_db()) as db:
-        cur = db.cursor()
-        cur.execute("INSERT INTO notes (content) VALUES (?)", [data['content']])
-        db.commit()
+    # Call the DB.create_note method to create a new note
+    new_note_id = DB.create_note(data['content'])
 
-    return jsonify({'message': 'Note created successfully'}), 201
+    return json.dumps({'message': 'Note created successfully', 'id': new_note_id}), 201
 
 
 @app.route('/api/notes', methods=['GET'])
 def get_all_notes():
-    with closing(connect_db()) as db:
-        cur = db.cursor()
-        cur.execute("SELECT * FROM notes")
-        notes = [{'id': row[0], 'content': row[1]} for row in cur.fetchall()]
+    # Call the DB.select_all_notes method to get all notes
+    notes = [{'id': row['id'], 'content': row['content']} for row in DB.select_all_notes()]
 
-    return jsonify(notes), 200
+    return json.dumps(notes), 200
 
 
-# Endpoint to get a specific note
 @app.route('/api/notes/<int:note_id>', methods=['GET'])
 def get_note(note_id):
-    with closing(connect_db()) as db:
-        cur = db.cursor()
-        cur.execute("SELECT * FROM notes WHERE id = ?", [note_id])
-        note = cur.fetchone()
+    # Call the DB.select_one_note method to get a specific note
+    note = DB.select_one_note(note_id)
 
     if not note:
-        return jsonify({'error': 'Note not found'}), 404
+        return json.dumps({'error': 'Note not found'}), 404
 
-    return jsonify({'id': note[0], 'content': note[1]}), 200
+    return json.dumps({'id': note['id'], 'content': note['content']}), 200
 
 
 @app.route('/api/notes/<int:note_id>', methods=['PUT'])
 def update_note(note_id):
-    data = request.json
+    # noinspection PyUnresolvedReferences
+    data = request.get_json(force=True)
     if 'content' not in data:
-        return jsonify({'error': 'Missing key: content'}), 422
+        return json.dumps({'error': 'Missing key: content'}), 422
 
-    with closing(connect_db()) as db:
-        cur = db.cursor()
-        cur.execute("UPDATE notes SET content = ? WHERE id = ?", [data['content'], note_id])
-        db.commit()
+    # Call the DB.update_note method to update the note
+    updated_rows = DB.update_note(note_id, data['content'])
 
-    return jsonify({'message': 'Note updated successfully'}), 200
+    if updated_rows == 0:
+        return json.dumps({'error': 'Note not found'}), 404
+
+    return json.dumps({'message': 'Note updated successfully'}), 200
 
 
 @app.route('/api/notes/<int:note_id>', methods=['DELETE'])
 def delete_note(note_id):
-    with closing(connect_db()) as db:
-        cur = db.cursor()
-        cur.execute("DELETE FROM notes WHERE id = ?", [note_id])
-        db.commit()
+    deleted_rows = DB.delete_note(note_id)
+    if deleted_rows == 0:
+        # If no rows were deleted, it means the note doesn't exist
+        return json.dumps({'error': 'Note not found'}), 404
+    else:
+        return json.dumps({'message': 'Note deleted successfully'}), 200
 
-    return jsonify({'message': 'Note deleted successfully'}), 200
-
-
-app = Flask(__name__)
-DATABASE = 'notes.db'
 
 if __name__ == '__main__':
     app.run(debug=True)
