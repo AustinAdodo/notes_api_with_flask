@@ -43,8 +43,11 @@ def get_database(incoming_request: request):
 
 
 def init_db():
-    with DB.conn:
-        DB.create_notes_table_if_not_exists()
+    db_name = get_database(request)
+    db = DB(db_name)
+    DB.create_notes_table_if_not_exists()
+    # with DB.conn:
+    #     DB.create_notes_table_if_not_exists()
 
 
 # sending get request and saving the response as response object
@@ -53,9 +56,6 @@ def init_db():
 @app.route('/api/notes', methods=['POST'])
 def create_note():
     # other method to get request body
-    db_name = get_database(request)
-    # Use db_name to open the appropriate database
-    DB.open_database(db_name)  # You'll need to implement this method in your DB module
     data = request.get_json()
     if data is None or 'content' not in data:
         return json.dumps({'error': 'Missing key: content'}), 422
