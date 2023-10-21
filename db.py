@@ -2,20 +2,29 @@ import sqlite3
 
 
 class DB:
-    path = "./workspace.db"
+    # path = "./workspace.db"
+    # conn = sqlite3.connect(path, check_same_thread=False)
+    # conn.row_factory = sqlite3.Row
+    # cursor = conn.cursor()
 
-    conn = sqlite3.connect(path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    @staticmethod
+    def open_database(db_name):
+        # Update the path based on the provided db_name
+        DB.path = f"./{db_name}"
+
+        # Create a new connection and cursor
+        DB.conn = sqlite3.connect(DB.path, check_same_thread=False)
+        DB.conn.row_factory = sqlite3.Row
+        DB.cursor = DB.conn.cursor()
 
     @staticmethod
     def create_notes_table_if_not_exists():
         """In SQLite, you should use AUTOINCREMENT without the
-             "AUTO" part. It should be AUTOINCREMENT or just INTEGER
-              PRIMARY KEY for auto-incrementing primary keys"""
+                     "AUTO" part. It should be AUTOINCREMENT or just INTEGER
+                      PRIMARY KEY for auto-incrementing primary keys"""
         query = """
         CREATE TABLE IF NOT EXISTS notes (
-            id INTEGER PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             content TEXT NOT NULL
         );
         """
