@@ -7,17 +7,26 @@ from db2 import DB2
 
 # from flask_restx import Api, Resource, fields
 # from flask_restplus import Api, Resource, fields
-
+Data_Comms = None
 app = Flask(__name__)  # creates an instance of the Flask class
-# Database = 'notes.db'
+Database = 'notes.db'
+
+
+# isHttp = hasattr(request, 'method') and request.method in ['GET', 'POST', 'PUT', 'DELETE']
+# if isHttp and 'User-Agent' in request and 'Postman' in request.headers.get('User-Agent'):
+#     Database = 'workspace.db'  # Use workspace.db for requests from Postman
+# else:
+#     Database = 'notes.db'
 
 
 def get_database(incoming_request: request):
     # Check the request headers
-    if 'User-Agent' in incoming_request.headers and 'Postman' in incoming_request.headers.get('User-Agent'):
-        return 'notes.db'  # Use notes.db for requests from Postman
+    condition = 'User-Agent' in incoming_request.headers and 'Postman' in incoming_request.headers.get('User-Agent')
+    if condition:
+        return 'workspace.db'  # Use workspace.db for requests from Postman
+
     else:
-        return 'workspace.db'
+        return 'notes.db'
 
 
 # Swagger Configurations
@@ -47,8 +56,8 @@ def init_db():
     db_name = get_database(request)
     db = DB(db_name)
     # DB.create_notes_table_if_not_exists()
-    with DB2.conn:
-        DB2.create_notes_table_if_not_exists()
+    # with DB2.conn:
+    #     DB2.create_notes_table_if_not_exists()
 
 
 # sending get request and saving the response as response object
