@@ -56,8 +56,8 @@ def init_db():
     db_name = get_database(request)
     db = DB(db_name)
     # DB.create_notes_table_if_not_exists()
-    # with DB2.conn:
-    #     DB2.create_notes_table_if_not_exists()
+    with DB2.conn:
+        DB2.create_notes_table_if_not_exists()
 
 
 # sending get request and saving the response as response object
