@@ -1,37 +1,27 @@
 import json
 import unittest
+import sqlite3
 from app import app
-from db2 import DB2
-
-
-# from db import DB
 
 
 class TestCase(unittest.TestCase):
     client = None
+    conn = None
 
-    # @classmethod
-    # def setUpClass(cls):
-    #     app.config['TESTING'] = True  # Set the app to testing mode
-    #     cls.client = app.test_client()
-    #     # You don't need to create a test database for the Flask client
-    #     # Testing will use a separate in-memory database by default
-    #
-    # def setUp(self):
-    #     pass
-    #
-    #     # DB.create_notes_table_if_not_exists()
-    #     # No need to create the notes table here, it's done in app.py when the app is started
     @classmethod
     def setUpClass(cls):
+        app.config['TESTING'] = True
         cls.client = app.test_client()
-        cls.client.testing = True
 
     def setUp(self):
-        DB2.create_notes_table_if_not_exists()
+        self.conn = sqlite3.connect(':memory:')
+        with self.conn:
+            cursor = self.conn.cursor()
+            query = 'CREATE TABLE notes (id INTEGER PRIMARY KEY, content TEXT);'
+            cursor.execute(query)
 
     def tearDown(self):
-        DB2.drop_notes_table_if_exists()
+        self.conn.close()
 
     def test_post(self):
         """POST /api/notes 201"""
@@ -42,7 +32,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_get(self):
-        """GET /api/notes/id 200"""
+        """GET /api/notes/id 200 using mock"""
         self.client.post(
             "/api/notes",
             json={"content": "hello again"},
