@@ -31,7 +31,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_get(self):
-        "GET /api/notes/id 200"
+        """GET /api/notes/id 200"""
         self.client.post(
             "/api/notes",
             json={"content": "hello again"},

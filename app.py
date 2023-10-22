@@ -1,14 +1,15 @@
 import cgi
 import json
-# import requests  # pip install --upgrade requests
-# from requests import request
+# from requests import request # pip install --upgrade requests
 from flask import Flask, request, jsonify
 from db import DB
+from db2 import DB2
 
 # from flask_restx import Api, Resource, fields
 # from flask_restplus import Api, Resource, fields
 
 app = Flask(__name__)  # creates an instance of the Flask class
+# Database = 'notes.db'
 
 
 def get_database(incoming_request: request):
@@ -56,52 +57,60 @@ def init_db():
 @app.route('/api/notes', methods=['POST'])
 def create_note():
     # other method to get request body
+    id_value = 0
     data = request.get_json()
     if data is None or 'content' not in data:
         return json.dumps({'error': 'Missing key: content'}), 422
-    new_note_id = DB.create_note(data['content'])
-    return json.dumps({'message': 'Note created successfully', 'id': new_note_id}), 201
+    content_data = data["content"]
+    if 'id' in data:
+        id_value = data['id']
+    # count = DB.get_total_notes_count()
+    count = 0
+    note_id = 1 if id_value == 0 or count == 0 else data["id"]
+    new_note_id = DB2.create_note(content_data)
+
+    return json.dumps({'message': 'Note created successfully', 'id': note_id}), 201
     # return jsonify({'message': 'Note created successfully'}), 201
 
 
-# @app.route('/api/notes', methods=['GET'])
-# def get_all_notes():
-#     notes = [{'id': row['id'], 'content': row['content']} for row in DB.select_all_notes()]
-#     return json.dumps(notes), 200
-#
-#
-# @app.route('/api/notes/<int:note_id>', methods=['GET'])
-# def get_note(note_id):
-#     note = DB.select_one_note(note_id)
-#
-#     if not note:
-#         return json.dumps({'error': 'Note not found'}), 404
-#
-#     return json.dumps({'id': note['id'], 'content': note['content']}), 200
-#
-#
-# @app.route('/api/notes/<int:note_id>', methods=['PUT'])
-# def update_note(note_id):
-#     # #noinspection PyUnresolvedReferences
-#     data = request.get_json(force=True)
-#     if 'content' not in data:
-#         return json.dumps({'error': 'Missing key: content'}), 422
-#
-#     updated_rows = DB.update_note(note_id, data['content'])
-#
-#     if updated_rows == 0:
-#         return json.dumps({'error': 'Note not found'}), 404
-#
-#     return json.dumps({'message': 'Note updated successfully'}), 200
+@app.route('/api/notes', methods=['GET'])
+def get_all_notes():
+    notes = [{'id': row['id'], 'content': row['content']} for row in DB.select_all_notes()]
+    return json.dumps(notes), 200
 
-#
-# @app.route('/api/notes/<int:note_id>', methods=['DELETE'])
-# def delete_note(note_id):
-#     deleted_rows = DB.delete_note(note_id)
-#     if deleted_rows == 0:
-#         return json.dumps({'error': 'Note not found'}), 404
-#     else:
-#         return json.dumps({'message': 'Note deleted successfully'}), 200
+
+@app.route('/api/notes/<int:note_id>', methods=['GET'])
+def get_note(note_id):
+    note = DB.select_one_note(note_id)
+
+    if not note:
+        return json.dumps({'error': 'Note not found'}), 404
+
+    return json.dumps({'id': note['id'], 'content': note['content']}), 200
+
+
+@app.route('/api/notes/<int:note_id>', methods=['PUT'])
+def update_note(note_id):
+    # #noinspection PyUnresolvedReferences
+    data = request.get_json(force=True)
+    if 'content' not in data:
+        return json.dumps({'error': 'Missing key: content'}), 422
+
+    updated_rows = DB.update_note(note_id, data['content'])
+
+    if updated_rows == 0:
+        return json.dumps({'error': 'Note not found'}), 404
+
+    return json.dumps({'message': 'Note updated successfully'}), 200
+
+
+@app.route('/api/notes/<int:note_id>', methods=['DELETE'])
+def delete_note(note_id):
+    deleted_rows = DB.delete_note(note_id)
+    if deleted_rows == 0:
+        return json.dumps({'error': 'Note not found'}), 404
+    else:
+        return json.dumps({'message': 'Note deleted successfully'}), 200
 
 
 if __name__ == '__main__':
