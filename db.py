@@ -25,7 +25,7 @@ class DB:
         );
         """
         try:
-            cls.cursor.execute(query)
+            cls.cursor.executescript(query)
             cls.conn.commit()
         except Exception as e:
             print(f"Error creating table: {str(e)}")

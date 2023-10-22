@@ -4,7 +4,8 @@ import sqlite3
 # fetch all the data
 # print(cursor.fetchall())
 class DB2:
-    path = "./workspace.db"
+    # path = "./workspace.db"
+    path = "./notes.db"
 
     conn = sqlite3.connect(path, check_same_thread=False)  # con = sqlite3.connect("workspace.db")
     conn.row_factory = sqlite3.Row
@@ -54,7 +55,8 @@ class DB2:
     def select_one_note(note_id):
         query = "SELECT * FROM notes WHERE id=?;"
         DB2.cursor.execute(query, (note_id,))
-        return DB2.cursor.fetchone()
+        result = DB2.cursor.fetchone()
+        return result
 
     @staticmethod
     def select_all_notes():

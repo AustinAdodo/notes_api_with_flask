@@ -46,9 +46,9 @@ def get_database(incoming_request: request):
 def init_db():
     db_name = get_database(request)
     db = DB(db_name)
-    DB.create_notes_table_if_not_exists()
-    # with DB.conn:
-    #     DB.create_notes_table_if_not_exists()
+    # DB.create_notes_table_if_not_exists()
+    with DB2.conn:
+        DB2.create_notes_table_if_not_exists()
 
 
 # sending get request and saving the response as response object
@@ -75,13 +75,13 @@ def create_note():
 
 @app.route('/api/notes', methods=['GET'])
 def get_all_notes():
-    notes = [{'id': row['id'], 'content': row['content']} for row in DB.select_all_notes()]
+    notes = [{'id': row['id'], 'content': row['content']} for row in DB2.select_all_notes()]
     return json.dumps(notes), 200
 
 
 @app.route('/api/notes/<int:note_id>', methods=['GET'])
 def get_note(note_id):
-    note = DB.select_one_note(note_id)
+    note = DB2.select_one_note(note_id)
 
     if not note:
         return json.dumps({'error': 'Note not found'}), 404
@@ -96,7 +96,7 @@ def update_note(note_id):
     if 'content' not in data:
         return json.dumps({'error': 'Missing key: content'}), 422
 
-    updated_rows = DB.update_note(note_id, data['content'])
+    updated_rows = DB2.update_note(note_id, data['content'])
 
     if updated_rows == 0:
         return json.dumps({'error': 'Note not found'}), 404
@@ -106,7 +106,7 @@ def update_note(note_id):
 
 @app.route('/api/notes/<int:note_id>', methods=['DELETE'])
 def delete_note(note_id):
-    deleted_rows = DB.delete_note(note_id)
+    deleted_rows = DB2.delete_note(note_id)
     if deleted_rows == 0:
         return json.dumps({'error': 'Note not found'}), 404
     else:
