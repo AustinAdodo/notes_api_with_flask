@@ -5,23 +5,8 @@ from db2 import DB2
 
 
 # from db import DB
-
-
 class TestCase(unittest.TestCase):
     client = None
-
-    # @classmethod
-    # def setUpClass(cls):
-    #     app.config['TESTING'] = True  # Set the app to testing mode
-    #     cls.client = app.test_client()
-    #     # You don't need to create a test database for the Flask client
-    #     # Testing will use a separate in-memory database by default
-    #
-    # def setUp(self):
-    #     pass
-    #
-    #     # DB.create_notes_table_if_not_exists()
-    #     # No need to create the notes table here, it's done in app.py when the app is started
     @classmethod
     def setUpClass(cls):
         cls.client = app.test_client()

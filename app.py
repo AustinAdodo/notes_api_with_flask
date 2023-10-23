@@ -30,7 +30,7 @@ def create_note():
     database = get_database_info()
     db = DB() if database == 'workspace.db' else DB2()
     new_note_id = db.create_note(data['content'])
-    db.close_connection()
+    # db.close_connection()
     return jsonify({'message': 'Note created successfully', 'id': new_note_id}), 201
 
 
