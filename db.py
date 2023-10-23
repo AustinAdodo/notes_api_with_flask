@@ -1,23 +1,22 @@
-# path = "./workspace.db"
-# conn = sqlite3.connect(path, check_same_thread=False)
-# conn.row_factory = sqlite3.Row
-# cursor = conn.cursor()
-
 import sqlite3
+from flask import request
 
 
 class DB:
-    conn = None
-    cursor = None
-
-    def __init__(self, db_name):
-        self.path = db_name
+    def __init__(self):
+        user_agent = request.headers.get('User-Agent')
+        self.path = 'workspace.db' if 'Postman' in user_agent else 'notes.db'
         self.conn = sqlite3.connect(self.path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.cursor = self.conn.cursor()
 
-    @classmethod
-    def create_notes_table_if_not_exists(cls):
+    def close_connection(self):
+        if self.cursor:
+            self.cursor.close()
+        if self.conn:
+            self.conn.close()
+
+    def create_notes_table_if_not_exists(self):
         query = """
         CREATE TABLE IF NOT EXISTS notes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,76 +24,68 @@ class DB:
         );
         """
         try:
-            cls.cursor.executescript(query)
-            cls.conn.commit()
+            self.cursor.executescript(query)
+            self.conn.commit()
         except Exception as e:
             print(f"Error creating table: {str(e)}")
 
-    @classmethod
-    def drop_notes_table_if_exists(cls):
+    def drop_notes_table_if_exists(self):
         try:
-            cls.cursor.execute("DROP TABLE IF EXISTS notes;")
-            cls.conn.commit()
+            self.cursor.execute("DROP TABLE IF EXISTS notes;")
+            self.conn.commit()
         except Exception as e:
             print(f"Error dropping table: {str(e)}")
 
-    @classmethod
-    def create_note(cls, contents):
+    def create_note(self, contents):
         query = "INSERT INTO notes (content) VALUES (?);"
         try:
-            with DB.conn:
-                DB.cursor.execute(query, (contents,))
-            return DB.cursor.lastrowid
+            self.cursor.execute(query, (contents,))
+            return self.cursor.lastrowid
         except sqlite3.Error as e:
-            # Handle the exception, e.g., log the error, return an error response, etc.
-            return None
+            (print(f"Error creating note: {str(e)}"))
+        return None
 
-    @classmethod
-    def update_note(cls, note_id, content):
+    def update_note(self, note_id, content):
         query = "UPDATE notes SET content=? WHERE id=?;"
         try:
-            cls.cursor.execute(query, (content, note_id))
-            cls.conn.commit()
-            return cls.cursor.rowcount
+            self.cursor.execute(query, (content, note_id))
+            self.conn.commit()
+            return self.cursor.rowcount
         except Exception as e:
             print(f"Error updating note: {str(e)}")
-            return -1  # Or raise a custom exception or return an error response.
+            return -1
 
-    @classmethod
-    def delete_note(cls, note_id):
+    def delete_note(self, note_id):
         query = "DELETE FROM notes WHERE id=?;"
         try:
-            cls.cursor.execute(query, (note_id,))
-            cls.conn.commit()
-            return cls.cursor.rowcount
+            self.cursor.execute(query, (note_id,))
+            self.conn.commit()
+            return self.cursor.rowcount
         except Exception as e:
             print(f"Error deleting note: {str(e)}")
-            return -1  # Or raise a custom exception or return an error response.
+            return -1
 
-    @classmethod
-    def select_one_note(cls, note_id):
+    def select_one_note(self, note_id):
         query = "SELECT * FROM notes WHERE id=?;"
         try:
-            cls.cursor.execute(query, (note_id,))
-            return cls.cursor.fetchone()
+            self.cursor.execute(query, (note_id,))
+            return self.cursor.fetchone()
         except Exception as e:
             print(f"Error selecting one note: {str(e)}")
-            return None  # Or raise a custom exception or return an error response.
+            return None
 
-    @classmethod
-    def select_all_notes(cls):
+    def select_all_notes(self):
         try:
-            cls.cursor.execute("SELECT * FROM notes;")
-            return cls.cursor.fetchall()
+            self.cursor.execute("SELECT * FROM notes;")
+            return self.cursor.fetchall()
         except Exception as e:
             print(f"Error selecting all notes: {str(e)}")
-            return None  # Or raise a custom exception or return an error response.
+            return None
 
-    @classmethod
-    def get_total_notes_count(cls):
+    def get_total_notes_count(self):
         try:
-            with cls.conn:
-                cursor = cls.conn.cursor()
+            with self.conn:
+                cursor = self.conn.cursor()
                 query = "SELECT COUNT(*) FROM notes;"
                 cursor.execute(query)
                 result = cursor.fetchone()
@@ -104,4 +95,4 @@ class DB:
                 return 0
         except Exception as e:
             print(f"Error getting total notes count: {str(e)}")
-            return 0  # Handle the error as needed, e.g., return an error response or raise a custom exception.
+            return 0

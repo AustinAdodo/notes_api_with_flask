@@ -1,7 +1,9 @@
 # import cgi
 import json
 # from requests import request # pip install --upgrade requests
-from flask import Flask, jsonify
+# from urllib.parse import parse_qs
+# from werkzeug.wrappers import Request
+from flask import Flask, jsonify, request
 from db import DB
 from db2 import DB2
 
@@ -21,8 +23,8 @@ def init():
 
 @app.route('/api/notes', methods=['POST'])
 def create_note():
-    # data = request.get_json()
-    data = request.args.getlist('content')
+    # data = req.args.get('content')
+    data = request.get_json()
     if data is None or 'content' not in data:
         return jsonify({'error': 'Missing key: content'}), 422
     database = get_database_info()
